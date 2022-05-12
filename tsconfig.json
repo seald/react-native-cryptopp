@@ -30,6 +30,8 @@
   },
   "exclude": [
     "lib",
-    "docs"
+    "docs",
+    "test",
+    "example"
   ],
 }
