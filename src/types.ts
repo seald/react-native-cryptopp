@@ -181,11 +181,13 @@ export type Cryptopp = {
       publicKey: string,
       encryptionScheme: RSA_EncryptionScheme
     ) => string;
+    encryptArrayBuffer: (data: ArrayBuffer, publicKey: string) => ArrayBuffer;
     decrypt: (
       data: BinaryLike,
       privateKey: string,
       encryptionScheme: RSA_EncryptionScheme
     ) => string;
+    decryptArrayBuffer: (data: ArrayBuffer, publicKey: string) => ArrayBuffer;
     sign: (
       data: BinaryLike,
       privateKey: string,

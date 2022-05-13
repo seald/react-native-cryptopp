@@ -24,7 +24,13 @@ void generateKeyPair(jsi::Runtime &rt, const jsi::Value *args,
 
 void encrypt(jsi::Runtime &rt, const jsi::Value *args, std::string *result);
 
+void encryptArrayBuffer(jsi::Runtime &rt, const jsi::Value *args,
+                        std::string *result);
+
 void decrypt(jsi::Runtime &rt, const jsi::Value *args, std::string *result);
+
+void decryptArrayBuffer(jsi::Runtime &rt, const jsi::Value *args,
+                        std::string *result);
 
 void sign(jsi::Runtime &rt, const jsi::Value *args, std::string *result);
 

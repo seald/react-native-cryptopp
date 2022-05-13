@@ -421,6 +421,46 @@ void rncryptopp_install(jsi::Runtime &jsiRuntime) {
         return jsi::String::createFromUtf8(rt, result);
       });
 
+  auto rsa_encrypt_array_buffer = jsi::Function::createFromHostFunction(
+      jsiRuntime,
+      jsi::PropNameID::forAscii(jsiRuntime, "rsa_encrypt_array_buffer"), 2,
+      [](jsi::Runtime &rt, const jsi::Value &thisValue, const jsi::Value *args,
+         size_t count) -> jsi::Value {
+        std::string resultAsString;
+        rncryptopp::RSA::encryptArrayBuffer(rt, args, &resultAsString);
+        jsi::Function array_buffer_ctor =
+            rt.global().getPropertyAsFunction(rt, "ArrayBuffer");
+        jsi::Object obj =
+            array_buffer_ctor
+                .callAsConstructor(rt, static_cast<int>(resultAsString.size()))
+                .getObject(rt);
+        jsi::ArrayBuffer buff = obj.getArrayBuffer(rt);
+
+        std::copy(resultAsString.begin(), resultAsString.end(), buff.data(rt));
+
+        return obj;
+      });
+
+  auto rsa_decrypt_array_buffer = jsi::Function::createFromHostFunction(
+      jsiRuntime,
+      jsi::PropNameID::forAscii(jsiRuntime, "rsa_decrypt_array_buffer"), 2,
+      [](jsi::Runtime &rt, const jsi::Value &thisValue, const jsi::Value *args,
+         size_t count) -> jsi::Value {
+        std::string resultAsString;
+        rncryptopp::RSA::decryptArrayBuffer(rt, args, &resultAsString);
+        jsi::Function array_buffer_ctor =
+            rt.global().getPropertyAsFunction(rt, "ArrayBuffer");
+        jsi::Object obj =
+            array_buffer_ctor
+                .callAsConstructor(rt, static_cast<int>(resultAsString.size()))
+                .getObject(rt);
+        jsi::ArrayBuffer buff = obj.getArrayBuffer(rt);
+
+        std::copy(resultAsString.begin(), resultAsString.end(), buff.data(rt));
+
+        return obj;
+      });
+
   auto rsa_decrypt = jsi::Function::createFromHostFunction(
       jsiRuntime, jsi::PropNameID::forAscii(jsiRuntime, "rsa_decrypt"), 2,
       [](jsi::Runtime &rt, const jsi::Value &thisValue, const jsi::Value *args,
@@ -461,7 +501,12 @@ void rncryptopp_install(jsi::Runtime &jsiRuntime) {
   RSA.setProperty(jsiRuntime, "generateKeyPair",
                   std::move(generate_rsa_keypair));
   RSA.setProperty(jsiRuntime, "encrypt", std::move(rsa_encrypt));
+  RSA.setProperty(jsiRuntime, "encryptArrayBuffer",
+                  std::move(rsa_encrypt_array_buffer));
   RSA.setProperty(jsiRuntime, "decrypt", std::move(rsa_decrypt));
+  RSA.setProperty(jsiRuntime, "decryptArrayBuffer",
+                  std::move(rsa_decrypt_array_buffer));
+
   RSA.setProperty(jsiRuntime, "sign", std::move(rsa_sign));
   RSA.setProperty(jsiRuntime, "verify", std::move(rsa_verify));
   RSA.setProperty(jsiRuntime, "recover", std::move(rsa_recover));

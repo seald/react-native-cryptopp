@@ -52,6 +52,10 @@ export default function App() {
       const aes_time = timeDelta(aes_start, PerformanceNow());
 
       let rsa_encrypted = '';
+      let rsa_encrypted_encoded_buffer = '';
+      let key_encoded = '';
+      let data_encoded = '';
+      let rsa_decrypted_encoded_buffer = '';
       let rsa_decrypted = '';
       let rsa_signature = '';
       let rsa_verify = '';
@@ -66,8 +70,44 @@ export default function App() {
           rsa_keypair.public,
           'OAEP_SHA1'
         );
+
+        const StringToUint8Array = (data_string: string) => {
+          const binLen = data_string.length;
+          const chars = new Uint8Array(binLen);
+          for (let i = 0; i < binLen; i++) {
+            chars[i] = String.prototype.charCodeAt.call(data_string, i);
+          }
+          return chars;
+        };
+
+        const data_string = 'dadada\0dididi';
+
+        data_encoded = Cryptopp.utils.toBase64(data_string);
+
+        const data = StringToUint8Array(data_string);
+
+        const rsa_encrypted_buffer = Cryptopp.RSA.encryptArrayBuffer(
+          data.buffer,
+          rsa_keypair.public
+        );
+
+        console.log(
+          'isArrayBuffer',
+          rsa_encrypted_buffer instanceof ArrayBuffer
+        );
+        rsa_encrypted_encoded_buffer =
+          Cryptopp.utils.toBase64(rsa_encrypted_buffer);
+
+        const rsa_decrypted_buffer = Cryptopp.RSA.decryptArrayBuffer(
+          rsa_encrypted_buffer,
+          rsa_keypair.private
+        );
+
+        rsa_decrypted_encoded_buffer =
+          Cryptopp.utils.toBase64(rsa_decrypted_buffer);
+
         rsa_decrypted = Cryptopp.RSA.decrypt(
-          rsa_encrypted,
+          rsa_encrypted_encoded_buffer,
           rsa_keypair.private,
           'OAEP_SHA1'
         );
@@ -204,6 +244,10 @@ export default function App() {
         pkbdf2,
         hkdf,
         key_padding_time,
+        rsa_encrypted_encoded_buffer,
+        key_encoded,
+        data_encoded,
+        rsa_decrypted_encoded_buffer,
       };
     },
     []

@@ -59,6 +59,66 @@ void generateKeyPair(jsi::Runtime &rt, const jsi::Value *args,
   result.setProperty(rt, "parameters", params);
 }
 
+void encryptArrayBuffer(jsi::Runtime &rt, const jsi::Value *args,
+                        std::string *result) {
+  const jsi::Value &value = args[0];
+  if (!value.isObject()) {
+    throwJSError(rt, "RNCryptopp: RSA encrypt data is not an ArrayBuffer");
+    return;
+  }
+  auto obj = value.asObject(rt);
+  if (!obj.isArrayBuffer(rt)) {
+    throwJSError(rt, "RNCryptopp: RSA encrypt data is not an ArrayBuffer");
+    return;
+  }
+  auto buf = obj.getArrayBuffer(rt);
+  std::string data = std::string((char *)buf.data(rt), buf.size(rt));
+
+  std::string publicKeyString;
+  if (!stringValueToString(rt, args[1], &publicKeyString))
+    throwJSError(rt, "RNCryptopp: RSA encrypt publicKey is not a string");
+
+  StringSource PKeyStringSource(publicKeyString, true);
+  CryptoPP::RSA::PublicKey publicKey;
+  PEM_Load(PKeyStringSource, publicKey);
+
+  AutoSeededRandomPool rng;
+
+  RSAES<OAEP<SHA1>>::Encryptor e(publicKey);
+  StringSource(data, true,
+               new PK_EncryptorFilter(rng, e, new StringSink(*result)));
+}
+
+void decryptArrayBuffer(jsi::Runtime &rt, const jsi::Value *args,
+                        std::string *result) {
+  const jsi::Value &value = args[0];
+  if (!value.isObject()) {
+    throwJSError(rt, "RNCryptopp: RSA decrypt data is not an ArrayBuffer");
+    return;
+  }
+  auto obj = value.asObject(rt);
+  if (!obj.isArrayBuffer(rt)) {
+    throwJSError(rt, "RNCryptopp: RSA decrypt data is not an ArrayBuffer");
+    return;
+  }
+  auto buf = obj.getArrayBuffer(rt);
+  std::string data = std::string((char *)buf.data(rt), buf.size(rt));
+
+  std::string privateKeyString;
+  if (!stringValueToString(rt, args[1], &privateKeyString))
+    throwJSError(rt, "RNCryptopp: RSA decrypt privateKey is not a string");
+
+  StringSource PKeyStringSource(privateKeyString, true);
+  CryptoPP::RSA::PrivateKey privateKey;
+  PEM_Load(PKeyStringSource, privateKey);
+
+  AutoSeededRandomPool rng;
+
+  RSAES<OAEP<SHA1>>::Decryptor e(privateKey);
+  StringSource(data, true,
+               new PK_DecryptorFilter(rng, e, new StringSink(*result)));
+}
+
 void encrypt(jsi::Runtime &rt, const jsi::Value *args, std::string *result) {
   std::string data;
   if (!binaryLikeValueToString(rt, args[0], &data))
