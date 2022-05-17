@@ -23,13 +23,24 @@ const zipDirectories = (sourceDirs, outPath) => {
   });
 };
 
+console.log('removing files');
 // // Remove all compiled files
-execSync(`rm -rf ${moduleDir}/cpp/ios`);
-execSync(`rm -rf ${moduleDir}/cpp/android`);
-execSync(`rm -rf ${moduleDir}/cpp/cryptopp`);
+execSync(`rm -rf ${moduleDir}/cpp/ios`, { stdio: 'inherit' });
+execSync(`rm -rf ${moduleDir}/cpp/android`, {
+  stdio: 'inherit',
+});
+execSync(`rm -rf ${moduleDir}/cpp/cryptopp`, {
+  stdio: 'inherit',
+});
 
 // Compile iOS
-execSync(`sh ${moduleDir}/scripts/compile_cryptopp_ios.sh`);
+console.log('Launching iOS script');
+
+execSync(`sh ${moduleDir}/scripts/compile_cryptopp_ios.sh`, {
+  stdio: 'inherit',
+});
+
+console.log('Launching android script');
 
 // Compile Android
 if (!process.env.ANDROID_NDK_ROOT) {
@@ -47,7 +58,9 @@ const platform = 'android-21';
 const sdk = process.env.ANDROID_SDK_ROOT;
 const ndk = process.env.ANDROID_NDK_ROOT;
 
-execSync(`sh ${android_script} ${platform} ${moduleDir} ${sdk} ${ndk}`);
+execSync(`sh ${android_script} ${platform} ${moduleDir} ${sdk} ${ndk}`, {
+  stdio: 'inherit',
+});
 
 // Create a single zip file that will be attached to the release.
 zipDirectories(

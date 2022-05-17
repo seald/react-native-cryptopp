@@ -45,9 +45,10 @@ search="-DCRYPTOPP_DISABLE_ASM"
 replace="-DCRYPTOPP_DISABLE_SSSE3"
 sed -i  -e "s/$search/$replace/g" "setenv-ios.sh"
 
-# Add arm64 iPhoneSimulator
-add='elif [[ "${IOS_SDK}" == "iPhoneSimulator" && "${IOS_CPU}" == "arm64" ]]; then MIN_VER=-miphonesimulator-version-min=6'
-sed -i "174i $add" "setenv-ios.sh"
+## Add arm64 iPhoneSimulator
+# TODO sed is not compatible with macos
+#add='elif [[ "${IOS_SDK}" == "iPhoneSimulator" && "${IOS_CPU}" == "arm64" ]]; then MIN_VER=-miphonesimulator-version-min=6'
+#sed -i "174i $add" "setenv-ios.sh"
 
 # #########################################
 # #####             Build             #####
@@ -55,13 +56,16 @@ sed -i "174i $add" "setenv-ios.sh"
 
 
 # Build for physical devices
+echo 'Building for iOS arm64'
 build_cryptopp_ios iPhoneOS arm64
 make clean
 
 # Build for simulator
+echo 'Building for iOS simulator x86_64'
 build_cryptopp_ios iPhoneSimulator x86_64
 make clean
 
+echo 'Building for iOS simulator arm64'
 build_cryptopp_ios iPhoneSimulator arm64
 make clean
 
